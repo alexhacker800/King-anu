@@ -1,0 +1,6 @@
+{
+  "name": "LoveNest ❤️",
+  "description": "Complete social media & private couples platform with posts, stories, chat, music sharing, memories & personal VPN.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
