@@ -1,0 +1,75 @@
+name: Build Debug APK and Publish Release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Grant Execute Permission to Gradlew
+        run: chmod +x gradlew
+
+      - name: Build Debug APK
+        run: ./gradlew assembleDebug
+
+      - name: Upload Debug APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug-apk
+          path: app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 30
+
+      - name: Publish GitHub Release
+        id: publish_release
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG_NAME="v${{ github.run_number }}"
+          RELEASE_TITLE="LoveNest Release $TAG_NAME"
+          # Rename the APK to a more friendly name for release asset
+          cp app/build/outputs/apk/debug/app-debug.apk ./LoveNest-v${{ github.run_number }}-debug.apk
+          
+          echo "Publishing release $TAG_NAME with asset LoveNest-v${{ github.run_number }}-debug.apk..."
+          gh release create "$TAG_NAME" ./LoveNest-v${{ github.run_number }}-debug.apk \
+            --title "$RELEASE_TITLE" \
+            --notes "Automated build and release of LoveNest debug APK. Build number: ${{ github.run_number }}. Root commit: ${{ github.sha }}." \
+            --draft=false \
+            --prerelease=false
+
+      - name: Generate Workflow Summary
+        run: |
+          echo "### Build & Release Summary 🚀" >> $GITHUB_STEP_SUMMARY
+          echo "---" >> $GITHUB_STEP_SUMMARY
+          echo "- **AGP Version:** 9.1.1" >> $GITHUB_STEP_SUMMARY
+          echo "- **Java Version:** JDK 21" >> $GITHUB_STEP_SUMMARY
+          echo "- **Gradle Version:** 9.3.1" >> $GITHUB_STEP_SUMMARY
+          echo "- **Build Command:** \`./gradlew assembleDebug\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **APK Path:** \`app/build/outputs/apk/debug/app-debug.apk\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Actions Artifact Name:** \`app-debug-apk\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Release Tag Format:** \`v<run_number>\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Release Asset Filename Format:** \`LoveNest-v<run_number>-debug.apk\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ steps.publish_release.outcome }}" = "success" ]; then
+            echo "✅ **GitHub Release Publishing:** Succeeded! The APK has been uploaded to the release." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ **GitHub Release Publishing:** Failed or Skipped (Check repository permissions or tag conflicts). However, the build was successful and the Actions artifact is fully preserved!" >> $GITHUB_STEP_SUMMARY
+          fi

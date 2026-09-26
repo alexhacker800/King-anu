@@ -406,6 +406,45 @@ class LoveNestRepository(context: Context) {
                 timestamp = System.currentTimeMillis()
             )
             db.chatDao().insertMessage(msg)
+
+            // Check if the message is directed to Cupid AI
+            val trimmed = text.trim()
+            val isAiQuery = trimmed.startsWith("/ai", ignoreCase = true) || 
+                            trimmed.startsWith("@ai", ignoreCase = true) || 
+                            trimmed.startsWith("@cupid", ignoreCase = true)
+
+            if (isAiQuery) {
+                val prompt = trimmed.substringAfter("/ai")
+                    .substringAfter("@ai")
+                    .substringAfter("@cupid")
+                    .trim()
+                
+                val apiKey = _coupleInfo.value.geminiApiKey
+                val response = com.example.data.api.GeminiClient.getLoveAdvice(
+                    if (prompt.isBlank()) "Hi Cupid AI!" else prompt, 
+                    apiKey
+                )
+                
+                val aiMsg = ChatMessage(
+                    senderName = "Cupid AI ❤️",
+                    messageText = response,
+                    isFromMe = false,
+                    isRead = false,
+                    timestamp = System.currentTimeMillis()
+                )
+                db.chatDao().insertMessage(aiMsg)
+                
+                // Add an anniversary or system notification for the love advice
+                db.notificationDao().insertNotification(
+                    NotificationItem(
+                        title = "Cupid AI ❤️ Advice",
+                        message = if (response.length > 50) response.take(47) + "..." else response,
+                        category = "Chat",
+                        timestamp = System.currentTimeMillis(),
+                        isRead = false
+                    )
+                )
+            }
         }
     }
 

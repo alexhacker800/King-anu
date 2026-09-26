@@ -140,6 +140,38 @@ fun ChatScreen(
             }
         }
 
+        // Cupid AI Suggestion Chips
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 4.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Default.AutoAwesome,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(16.dp)
+            )
+            Text(
+                text = "Cupid AI:",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.primary
+            )
+            val suggestions = listOf(
+                "Date Tips 💡" to "/ai Plan a perfect sweet date",
+                "Love Poem ✍️" to "/ai Write a romantic poem for us",
+                "Apologize 🥺" to "/ai Suggest sweet words to apologize"
+            )
+            suggestions.forEach { (label, promptText) ->
+                SuggestionChip(
+                    onClick = { textInput = promptText },
+                    label = { Text(label, style = MaterialTheme.typography.labelSmall) }
+                )
+            }
+        }
+
         // Input Bar
         Surface(
             tonalElevation = 6.dp,
