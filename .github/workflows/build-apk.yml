@@ -24,11 +24,13 @@ jobs:
           distribution: 'temurin'
           cache: 'gradle'
 
-      - name: Grant Execute Permission to Gradlew
-        run: chmod +x gradlew
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.3.1'
 
       - name: Build Debug APK
-        run: ./gradlew assembleDebug
+        run: gradle assembleDebug
 
       - name: Upload Debug APK Artifact
         uses: actions/upload-artifact@v4
@@ -62,7 +64,7 @@ jobs:
           echo "- **AGP Version:** 9.1.1" >> $GITHUB_STEP_SUMMARY
           echo "- **Java Version:** JDK 21" >> $GITHUB_STEP_SUMMARY
           echo "- **Gradle Version:** 9.3.1" >> $GITHUB_STEP_SUMMARY
-          echo "- **Build Command:** \`./gradlew assembleDebug\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Build Command:** \`gradle assembleDebug\`" >> $GITHUB_STEP_SUMMARY
           echo "- **APK Path:** \`app/build/outputs/apk/debug/app-debug.apk\`" >> $GITHUB_STEP_SUMMARY
           echo "- **Actions Artifact Name:** \`app-debug-apk\`" >> $GITHUB_STEP_SUMMARY
           echo "- **Release Tag Format:** \`v<run_number>\`" >> $GITHUB_STEP_SUMMARY
