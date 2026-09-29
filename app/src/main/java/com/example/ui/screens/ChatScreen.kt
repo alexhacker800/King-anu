@@ -17,11 +17,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.data.models.ChatMessage
 import com.example.data.models.CoupleInfo
+import com.example.ui.components.FileDownloader
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -31,6 +33,7 @@ fun ChatScreen(
     onSendMessage: (text: String, mediaUrl: String?, isVoice: Boolean) -> Unit,
     onDeleteMessage: (Long) -> Unit
 ) {
+    val context = LocalContext.current
     var textInput by remember { mutableStateOf("") }
     var isRecordingVoice by remember { mutableStateOf(false) }
     var showPartnerInfoModal by remember { mutableStateOf(false) }
@@ -272,6 +275,20 @@ fun ChatScreen(
             text = { Text(msg.messageText) },
             confirmButton = {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    if (msg.mediaUrl != null || msg.songUrl != null) {
+                        TextButton(onClick = {
+                            val downloadUrl = msg.mediaUrl ?: msg.songUrl ?: ""
+                            val downloadTitle = msg.songTitle ?: if (msg.isVoiceNote) "Voice Note" else "Chat Media"
+                            val downloadCategory = if (msg.songUrl != null) "Voice Secrets" else if (msg.isVoiceNote) "Voice Secrets" else "Photos"
+                            FileDownloader.downloadFile(context, downloadUrl, downloadTitle, downloadCategory)
+                            selectedMessageForOption = null
+                        }) {
+                            Icon(Icons.Default.Download, contentDescription = null)
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Download")
+                        }
+                    }
+
                     if (msg.isFromMe) {
                         TextButton(onClick = {
                             onDeleteMessage(msg.id)

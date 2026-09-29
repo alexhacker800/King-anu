@@ -15,10 +15,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.data.models.Song
+import com.example.ui.components.FileDownloader
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -241,6 +243,7 @@ fun SongRowItem(
     onSendToChat: () -> Unit,
     onFavoriteToggle: () -> Unit
 ) {
+    val context = LocalContext.current
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -285,6 +288,22 @@ fun SongRowItem(
                         imageVector = if (song.isFavorite) Icons.Default.Favorite else Icons.Outlined.FavoriteBorder,
                         contentDescription = "Favorite",
                         tint = if (song.isFavorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                IconButton(
+                    onClick = {
+                        FileDownloader.downloadFile(
+                            context = context,
+                            url = song.audioUrl,
+                            title = song.title,
+                            category = "Voice Secrets"
+                        )
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Download,
+                        contentDescription = "Download Song",
+                        tint = MaterialTheme.colorScheme.primary
                     )
                 }
                 IconButton(onClick = onSendToChat) {

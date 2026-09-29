@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -27,6 +28,7 @@ import coil.compose.AsyncImage
 import com.example.data.models.CoupleInfo
 import com.example.data.models.StorageItem
 import com.example.ui.components.PrivacyLockOverlay
+import com.example.ui.components.FileDownloader
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -37,6 +39,7 @@ fun LoveStorageScreen(
     onDeleteStorageItem: (Long) -> Unit,
     onUnlockVault: () -> Unit
 ) {
+    val context = LocalContext.current
     var selectedCategory by remember { mutableStateOf("All") }
     var showUploadModal by remember { mutableStateOf(false) }
     var showLockModal by remember { mutableStateOf(coupleInfo.isVaultLocked && coupleInfo.isAppLockEnabled) }
@@ -259,6 +262,23 @@ fun LoveStorageScreen(
                                         modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                                     )
                                 }
+                            }
+
+                            IconButton(
+                                onClick = {
+                                    FileDownloader.downloadFile(
+                                        context = context,
+                                        url = item.fileUrl,
+                                        title = item.title,
+                                        category = item.category
+                                    )
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Download,
+                                    contentDescription = "Download File",
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
                             }
 
                             IconButton(onClick = { onDeleteStorageItem(item.id) }) {
